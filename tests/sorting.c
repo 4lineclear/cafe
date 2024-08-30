@@ -1,5 +1,25 @@
+#include "../src/sorting.c"
 #include <stdio.h>
 #include <stdlib.h>
+
+int compare_arrs(int *a, int *b, const size_t len);
+
+int test_selection();
+
+int main() {
+  int failures = EXIT_SUCCESS;
+  failures += test_selection();
+  return EXIT_FAILURE;
+}
+
+int test_selection() {
+  printf("Testing selection sort");
+  const int len = 6;
+  int expected[] = {0, 1, 2, 3, 4, 5};
+  int to_test[] = {5, 3, 1, 2, 0, 4};
+  selection_sort(to_test, len);
+  return compare_arrs(expected, to_test, len);
+}
 
 void print_one(int *n, const size_t len) {
   size_t i;

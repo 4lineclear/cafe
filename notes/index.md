@@ -24,3 +24,7 @@ Most of the above should also come with a wide array of testing.
 ## Built
 
 So far nothing
+
+## Other notes
+
+See build/Testing/Temporary/LastTest.log for test logs.
