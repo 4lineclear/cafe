@@ -29,6 +29,7 @@ file(COPY ${data} DESTINATION resources)
 ###############################################################################
 ## testing ####################################################################
 ###############################################################################
+## includes valgrind
 
 enable_testing()
 
@@ -43,5 +44,14 @@ foreach(testSrc ${sources_test})
         NAME ${testName}
         WORKING_DIRECTORY ${testBin}
         COMMAND ${testBin}/${testName})
-
+    add_test(
+        NAME ${testName}Memcheck
+        WORKING_DIRECTORY ${testBin}
+        COMMAND valgrind
+            --track-origins=yes
+            --error-exitcode=1
+            --tool=memcheck
+            --leak-check=full
+            --errors-for-leak-kinds=definite
+            --show-leak-kinds=definite $<TARGET_FILE:${testName}>)
 endforeach()

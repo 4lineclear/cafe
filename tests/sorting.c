@@ -3,22 +3,39 @@
 #include <stdlib.h>
 
 int compare_arrs(int *a, int *b, const size_t len);
+void print_one(int *n, const size_t len);
 
-int test_selection();
+int standard_test(const char *name, void (*sort)(int *, size_t));
 
 int main() {
   int failures = EXIT_SUCCESS;
-  failures += test_selection();
-  return EXIT_FAILURE;
+  failures += standard_test("selection sort", selection_sort);
+  failures += standard_test("bubble sort", bubble_sort);
+  failures += standard_test("insertion sort", insertion_sort);
+  failures += standard_test("merge sort", merge_sort);
+  return failures;
 }
 
-int test_selection() {
-  printf("Testing selection sort");
+int empty_test(void (*sort)(int *, size_t)) {
+  const int len = 0;
+  int expected[] = {};
+  int to_test[] = {};
+  sort(to_test, len);
+  return compare_arrs(expected, to_test, len);
+}
+
+int standard_test(const char *name, void (*sort)(int *, size_t)) {
+  printf("Testing %s: ", name);
   const int len = 6;
   int expected[] = {0, 1, 2, 3, 4, 5};
   int to_test[] = {5, 3, 1, 2, 0, 4};
-  selection_sort(to_test, len);
-  return compare_arrs(expected, to_test, len);
+  print_one(to_test, len);
+  puts("");
+  sort(to_test, len);
+  int o = empty_test(sort) + compare_arrs(expected, to_test, len);
+  if (o == EXIT_SUCCESS)
+    puts("success");
+  return o;
 }
 
 void print_one(int *n, const size_t len) {
@@ -47,7 +64,7 @@ int compare_arrs(int *a, int *b, const size_t len) {
   int failures = EXIT_SUCCESS;
   for (i = 0; i < len; i++) {
     if (a[i] != b[i]) {
-      printf("incorrect input found at index %zu %d %d\n", i, a[i], b[i]);
+      printf("incorrect input found at index %zu\n", i);
       failures += EXIT_FAILURE;
     }
   }
