@@ -12,9 +12,8 @@ void selection_sort(int *items, size_t len) {
 }
 
 void bubble_sort(int *items, size_t len) {
-  if (len < 2) {
+  if (len < 2)
     return;
-  }
   for (size_t i = 0; i < len; i++) {
     for (size_t j = 0; j < (len - i - 1); j++) {
       if (items[j] > items[j + 1]) {
