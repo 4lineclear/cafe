@@ -157,7 +157,7 @@ void nth() {
 void compare_forward(dll *list, int *e, const size_t len) {
   size_t i = 0;
   dln *node = list->head;
-  while (node != NULL && i < len) {
+  while (NULL != node && i < len) {
     assertf(node->data == e[i],
             "The node at index %zu holds data %d, which differs from the "
             "expected value of %d.",
@@ -165,8 +165,8 @@ void compare_forward(dll *list, int *e, const size_t len) {
     node = node->next;
     i++;
   }
-  if (node != NULL) {
-    while (node->next != NULL) {
+  if (NULL != node) {
+    while (NULL != node->next) {
       i++;
       node = node->next;
     }
@@ -178,7 +178,7 @@ void compare_forward(dll *list, int *e, const size_t len) {
 void compare_reverse(dll *list, int *e, const size_t len) {
   size_t i = len - 1;
   dln *node = list->tail;
-  while (node != NULL && i >= 0) {
+  while (NULL != node && i >= 0) {
     printf("%zu\n", i);
     assertf(node->data == e[i],
             "The node at index %zu holds data %d, which differs from the "
@@ -187,8 +187,8 @@ void compare_reverse(dll *list, int *e, const size_t len) {
     node = node->prev;
     i -= i > 0;
   }
-  if (node != NULL) {
-    while (node->prev != NULL) {
+  if (NULL != node) {
+    while (NULL != node->prev) {
       node = node->prev;
       i -= i > 0;
     }
