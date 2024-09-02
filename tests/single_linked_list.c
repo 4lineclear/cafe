@@ -76,7 +76,7 @@ void search() {
     if (o) {
       assertf(o->data == i, "%d not found, %d found instead\n", i, o->data)
     } else
-      assertf(0, "%d not found, NULL foudn instead\n", i);
+      assertf(0, "%d not found, NULL found instead\n", i);
   }
   free_sll(&list);
 }

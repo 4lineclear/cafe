@@ -2,26 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct single_linked_list {
+typedef struct single_linked_list {
   struct single_list_node *head;
   struct single_list_node *tail;
-};
+} sll;
 
-struct single_list_node {
+typedef struct single_list_node {
   int data;
   struct single_list_node *next;
-};
-
-typedef struct single_linked_list sll;
-typedef struct single_list_node sln;
+} sln;
 
 int sll_empty(sll *list) {
-  if (list->head == NULL) {
-    assert(list->tail == NULL);
+  if (NULL == list->head) {
+    assert(NULL == list->tail);
     return 1;
   }
-  if (list->tail == NULL) {
-    assert(list->head == NULL);
+  if (NULL == list->tail) {
+    assert(NULL == list->head);
     return 1;
   }
   return 0;
@@ -31,7 +28,7 @@ void free_sll(sll *list) {
   assert(NULL != list);
   sln *curr = list->head;
   sln *next = curr;
-  while (curr != NULL) {
+  while (NULL != curr) {
     next = curr->next;
     free(curr);
     curr = next;
@@ -61,9 +58,6 @@ void sll_append(sll *list, int data) {
   if (sll_empty(list)) {
     list->head = new;
     list->tail = new;
-  } else if (list->head == list->tail) {
-    list->head->next = new;
-    list->tail = new;
   } else {
     list->tail->next = new;
     list->tail = new;
@@ -83,6 +77,16 @@ void sll_prepend(sll *list, int data) {
   }
 }
 
+sll copy_sln(sln *node) {
+  sll list = empty_sll();
+  sln *curr = node;
+  while (NULL != curr) {
+    sll_append(&list, curr->data);
+    curr = curr->next;
+  }
+  return list;
+}
+
 sll sll_from_arr(int *items, size_t len) {
   if (len < 1)
     return empty_sll();
@@ -95,50 +99,47 @@ sll sll_from_arr(int *items, size_t len) {
 
 sln *sll_search(sll *list, int data) {
   assert(NULL != list);
-  sln *curr = list->head;
-  for (sln *curr = list->head; curr != NULL; curr = curr->next)
+  sln *curr;
+  for (curr = list->head; NULL != curr; curr = curr->next)
     if (curr->data == data)
       return curr;
   return NULL;
 }
 
-void sll_copy_after(sll *list, sln *nodes) {
+void sll_copy_after(sll *list, sln *node) {
   assert(NULL != list);
-  sln *curr = nodes;
-  while (curr != NULL) {
-    sll_append(list, curr->data);
-    curr = curr->next;
+  sll copy = copy_sln(node);
+  if (sll_empty(list)) {
+    *list = copy;
+  } else {
+    list->tail->next = copy.head;
+    list->tail = copy.tail;
   }
 }
 
-void sll_copy_before(sll *list, sln *nodes) {
+void sll_copy_before(sll *list, sln *node) {
   assert(NULL != list);
-  if (NULL == nodes)
-    return;
-  sln *new_head = new_sln(nodes->data);
-  sln *new_curr = new_head;
-  sln *curr = nodes->next;
-  while (curr != NULL) {
-    new_curr->next = new_sln(curr->data);
-    new_curr = new_curr->next;
-    curr = curr->next;
+  sll copy = copy_sln(node);
+  if (sll_empty(list)) {
+    *list = copy;
+  } else {
+    copy.tail->next = list->head;
+    list->head = copy.head;
   }
-  new_curr->next = list->head;
-  list->head = new_head;
 }
 
-void sll_extend_after(sll *list, sln *nodes) {
+void sll_extend_after(sll *list, sln *node) {
   assert(NULL != list);
-  if (NULL == nodes)
+  if (NULL == node)
     return;
-  sln *curr = nodes;
-  while (curr->next != NULL)
+  sln *curr = node;
+  while (NULL != curr->next)
     curr = curr->next;
   if (sll_empty(list)) {
-    list->head = nodes;
+    list->head = node;
     list->tail = curr;
   } else {
-    list->tail->next = nodes;
+    list->tail->next = node;
     list->tail = curr;
   }
 }
@@ -148,7 +149,7 @@ void sll_extend_before(sll *list, sln *nodes) {
   if (NULL == nodes)
     return;
   sln *curr = nodes;
-  while (curr->next != NULL)
+  while (NULL != curr->next)
     curr = curr->next;
   if (sll_empty(list)) {
     list->head = nodes;
