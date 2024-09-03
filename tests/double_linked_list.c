@@ -179,7 +179,6 @@ void compare_reverse(dll *list, int *e, const size_t len) {
   size_t i = len - 1;
   dln *node = list->tail;
   while (NULL != node && i >= 0) {
-    printf("%zu\n", i);
     assertf(node->data == e[i],
             "The node at index %zu holds data %d, which differs from the "
             "expected value of %d.",
