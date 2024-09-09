@@ -20,6 +20,10 @@ cafe is a set of algorithms & functions built to learn c.
 
 Most of the above should also come with a wide array of testing.
 
+# Other TODO
+
+replaces usages of NULL with normal pointer checking `(ptr) && (!ptr)`
+
 
 ## Built
 
