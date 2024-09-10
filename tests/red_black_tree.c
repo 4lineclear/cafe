@@ -6,9 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-void cmp_tree(rbtree *, rbtree *);
+void cmp_node(rbnode *, rbnode *);
 void clone();
 void rotate();
+void search();
+void search_null();
+void search_fail();
 void insert_case1();
 void insert_case2a();
 void insert_case2b();
@@ -22,7 +25,7 @@ void insert_case4b1();
 void insert_case4b2();
 void insert_casem1();
 void insert_casem2();
-void print(rbtree *);
+void print(rbnode *);
 
 #define check_node(N, D, C)                                                    \
   assertf(N != NULL, "given node is null");                                    \
@@ -32,6 +35,9 @@ void print(rbtree *);
 int main() {
   clone();
   rotate();
+  search();
+  search_fail();
+  search_null();
   insert_case1();
   insert_case2a();
   insert_case2b();
@@ -47,268 +53,291 @@ int main() {
   return EXIT_SUCCESS;
 }
 
-void print_tree(rbtree *tree, int depth) {
-  if (NULL == tree)
+void print_node(rbnode *node, int depth) {
+  if (!node)
     return;
-  printf("%d: %d ", depth, tree->data);
-  print_tree(tree->left, depth + 1);
-  print_tree(tree->right, depth + 1);
+  printf("%d: %d ", depth, node->data);
+  print_node(node->left, depth + 1);
+  print_node(node->right, depth + 1);
 }
 
-rbtree *test_tree_one() {
-  rbtree *p = new_black_rbtree(4);
-  rbtree *x = new_black_rbtree(10);
-  rbtree *y = new_black_rbtree(12);
-  rbtree *a = new_black_rbtree(9);
-  rbtree *b = new_black_rbtree(11);
-  rbtree *c = new_black_rbtree(13);
-  rbtree_link(p, x, 1);
-  rbtree_link(x, a, 0);
-  rbtree_link(x, y, 1);
-  rbtree_link(y, b, 0);
-  rbtree_link(y, c, 1);
+rbnode *test_node_one() {
+  rbnode *p = new_black_rbnode(4);
+  rbnode *x = new_black_rbnode(10);
+  rbnode *y = new_black_rbnode(12);
+  rbnode *a = new_black_rbnode(9);
+  rbnode *b = new_black_rbnode(11);
+  rbnode *c = new_black_rbnode(13);
+  rbnode_link(p, x, 1);
+  rbnode_link(x, a, 0);
+  rbnode_link(x, y, 1);
+  rbnode_link(y, b, 0);
+  rbnode_link(y, c, 1);
   return p;
 }
 
 void clone() {
-  rbtree *actual = test_tree_one();
-  rbtree *expected = clone_rbtree(actual);
-  cmp_tree(expected, actual);
-  free_rbtree(actual);
-  free_rbtree(expected);
+  rbnode *actual = test_node_one();
+  rbnode *expected = clone_rbnode(actual);
+  cmp_node(expected, actual);
+  free_rbnode(actual);
+  free_rbnode(expected);
 }
 
 void rotate() {
-  rbtree *actual = test_tree_one();
-  rbtree *expected = test_tree_one();
-  rbtree_rotate_left(actual->right);
-  rbtree_rotate_right(actual->right);
-  cmp_tree(expected, actual);
-  free_rbtree(actual);
-  free_rbtree(expected);
+  rbnode *actual = test_node_one();
+  rbnode *expected = test_node_one();
+  rbnode_rotate_left(actual->right);
+  rbnode_rotate_right(actual->right);
+  cmp_node(expected, actual);
+  free_rbnode(actual);
+  free_rbnode(expected);
+}
+
+void search() {
+  rbnode *node = test_node_one();
+  rbnode *expected = node->right->right->right;
+  rbnode *actual = search_rbnode(node, 13);
+  assertf(actual == expected, "actual %p != expected %p", actual, expected);
+  free_rbnode(node);
+}
+
+void search_null() {
+  rbnode *node = NULL;
+  rbnode *expected = NULL;
+  rbnode *actual = search_rbnode(node, 13);
+  assertf(actual == expected, "actual %p != expected %p", actual, expected);
+}
+
+void search_fail() {
+  rbnode *node = test_node_one();
+  rbnode *expected = NULL;
+  rbnode *actual = search_rbnode(node, 14);
+  assertf(actual == expected, "actual %p != expected %p", actual, expected);
+  free_rbnode(node);
 }
 
 void insert_case1() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  check_node(tree, 11, Black);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  check_node(node, 11, Black);
+  free_rbnode(node);
 }
 
 void insert_case2a() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 9);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 9, Red);
-  check_node(tree->right, 12, Red);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 9);
+  check_node(node, 11, Black);
+  check_node(node->left, 9, Red);
+  check_node(node->right, 12, Red);
+  free_rbnode(node);
 }
 
 void insert_case2b() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 9);
-  rbtree_insert(&tree, 7);
-  rbtree_insert(&tree, 8);
-  rbtree_insert(&tree, 6);
-  rbtree_insert(&tree, 5);
-  tree = rbtree_root(tree);
-  check_node(tree, 9, Black);
-  check_node(tree->left, 7, Red);
-  check_node(tree->left->left, 6, Black);
-  check_node(tree->left->left->left, 5, Red);
-  check_node(tree->left->right, 8, Black);
-  check_node(tree->right, 11, Red);
-  check_node(tree->right->left, 10, Black);
-  check_node(tree->right->right, 12, Black);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 9);
+  rbnode_insert(&node, 7);
+  rbnode_insert(&node, 8);
+  rbnode_insert(&node, 6);
+  rbnode_insert(&node, 5);
+  node = rbnode_root(node);
+  check_node(node, 9, Black);
+  check_node(node->left, 7, Red);
+  check_node(node->left->left, 6, Black);
+  check_node(node->left->left->left, 5, Red);
+  check_node(node->left->right, 8, Black);
+  check_node(node->right, 11, Red);
+  check_node(node->right->left, 10, Black);
+  check_node(node->right->right, 12, Black);
+  free_rbnode(node);
 }
 
 void insert_case3a1() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 9);
-  rbtree_insert(&tree, 8);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 9, Black);
-  check_node(tree->left->left, 8, Red);
-  check_node(tree->right, 12, Black);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 9);
+  rbnode_insert(&node, 8);
+  check_node(node, 11, Black);
+  check_node(node->left, 9, Black);
+  check_node(node->left->left, 8, Red);
+  check_node(node->right, 12, Black);
+  free_rbnode(node);
 }
 
 void insert_case3a2() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 13);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 10, Black);
-  check_node(tree->right, 12, Black);
-  check_node(tree->right->right, 13, Red);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 13);
+  check_node(node, 11, Black);
+  check_node(node->left, 10, Black);
+  check_node(node->right, 12, Black);
+  check_node(node->right->right, 13, Red);
+  free_rbnode(node);
 }
 
 void insert_case3b1() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 9);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 8);
-  rbtree_insert(&tree, 6);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 9, Red);
-  check_node(tree->left->left, 8, Black);
-  check_node(tree->left->right, 10, Black);
-  check_node(tree->left->left->left, 6, Red);
-  check_node(tree->right, 12, Black);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 9);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 8);
+  rbnode_insert(&node, 6);
+  check_node(node, 11, Black);
+  check_node(node->left, 9, Red);
+  check_node(node->left->left, 8, Black);
+  check_node(node->left->right, 10, Black);
+  check_node(node->left->left->left, 6, Red);
+  check_node(node->right, 12, Black);
+  free_rbnode(node);
 }
 
 void insert_case3b2() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 13);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 14);
-  rbtree_insert(&tree, 15);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 10, Black);
-  check_node(tree->right, 13, Red);
-  check_node(tree->right->left, 12, Black);
-  check_node(tree->right->right, 14, Black);
-  check_node(tree->right->right->right, 15, Red);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 13);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 14);
+  rbnode_insert(&node, 15);
+  check_node(node, 11, Black);
+  check_node(node->left, 10, Black);
+  check_node(node->right, 13, Red);
+  check_node(node->right->left, 12, Black);
+  check_node(node->right->right, 14, Black);
+  check_node(node->right->right->right, 15, Red);
+  free_rbnode(node);
 }
 
 void insert_case4a1() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 9);
-  rbtree_insert(&tree, 8);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 9, Black);
-  check_node(tree->left->left, 8, Red);
-  check_node(tree->left->right, 10, Red);
-  check_node(tree->right, 12, Black);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 9);
+  rbnode_insert(&node, 8);
+  check_node(node, 11, Black);
+  check_node(node->left, 9, Black);
+  check_node(node->left->left, 8, Red);
+  check_node(node->left->right, 10, Red);
+  check_node(node->right, 12, Black);
+  free_rbnode(node);
 }
 
 void insert_case4a2() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 14);
-  rbtree_insert(&tree, 15);
-  rbtree_insert(&tree, 16);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 10, Black);
-  check_node(tree->right, 15, Black);
-  check_node(tree->right->left, 14, Red);
-  check_node(tree->right->right, 16, Red);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 14);
+  rbnode_insert(&node, 15);
+  rbnode_insert(&node, 16);
+  check_node(node, 11, Black);
+  check_node(node->left, 10, Black);
+  check_node(node->right, 15, Black);
+  check_node(node->right->left, 14, Red);
+  check_node(node->right->right, 16, Red);
+  free_rbnode(node);
 }
 
 void insert_case4b1() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 12);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 8);
-  rbtree_insert(&tree, 9);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 9, Black);
-  check_node(tree->left->left, 8, Red);
-  check_node(tree->left->right, 10, Red);
-  check_node(tree->right, 12, Black);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 12);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 8);
+  rbnode_insert(&node, 9);
+  check_node(node, 11, Black);
+  check_node(node->left, 9, Black);
+  check_node(node->left->left, 8, Red);
+  check_node(node->left->right, 10, Red);
+  check_node(node->right, 12, Black);
+  free_rbnode(node);
 }
 
 void insert_case4b2() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 14);
-  rbtree_insert(&tree, 16);
-  rbtree_insert(&tree, 15);
-  check_node(tree, 11, Black);
-  check_node(tree->left, 10, Black);
-  check_node(tree->right, 15, Black);
-  check_node(tree->right->left, 14, Red);
-  check_node(tree->right->right, 16, Red);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 14);
+  rbnode_insert(&node, 16);
+  rbnode_insert(&node, 15);
+  check_node(node, 11, Black);
+  check_node(node->left, 10, Black);
+  check_node(node->right, 15, Black);
+  check_node(node->right->left, 14, Red);
+  check_node(node->right->right, 16, Red);
+  free_rbnode(node);
 }
 
 void insert_casem1() {
-  rbtree *tree = NULL;
-  rbtree_insert(&tree, 11);
-  rbtree_insert(&tree, 10);
-  rbtree_insert(&tree, 9);
-  tree = rbtree_root(tree);
-  check_node(tree, 10, Black);
-  check_node(tree->left, 9, Red);
-  check_node(tree->right, 11, Red);
-  free_rbtree(tree);
+  rbnode *node = NULL;
+  rbnode_insert(&node, 11);
+  rbnode_insert(&node, 10);
+  rbnode_insert(&node, 9);
+  node = rbnode_root(node);
+  check_node(node, 10, Black);
+  check_node(node->left, 9, Red);
+  check_node(node->right, 11, Red);
+  free_rbnode(node);
 }
 
 void insert_casem2() {
-  rbtree *tree = NULL;
+  rbnode *node = NULL;
   for (int data = 0; data < 11; data++)
-    rbtree_insert(&tree, data);
-  check_node(tree, 3, Black);
-  check_node(tree->left, 1, Black);
-  check_node(tree->left->left, 0, Black);
-  check_node(tree->left->right, 2, Black);
-  check_node(tree->right, 5, Black);
-  check_node(tree->right->left, 4, Black);
-  check_node(tree->right->right, 7, Red);
-  check_node(tree->right->right->left, 6, Black);
-  check_node(tree->right->right->right, 9, Black);
-  check_node(tree->right->right->right->left, 8, Red);
-  check_node(tree->right->right->right->right, 10, Red);
+    rbnode_insert(&node, data);
+  check_node(node, 3, Black);
+  check_node(node->left, 1, Black);
+  check_node(node->left->left, 0, Black);
+  check_node(node->left->right, 2, Black);
+  check_node(node->right, 5, Black);
+  check_node(node->right->left, 4, Black);
+  check_node(node->right->right, 7, Red);
+  check_node(node->right->right->left, 6, Black);
+  check_node(node->right->right->right, 9, Black);
+  check_node(node->right->right->right->left, 8, Red);
+  check_node(node->right->right->right->right, 10, Red);
 
-  tree = rbtree_root(tree);
-  free_rbtree(tree);
+  node = rbnode_root(node);
+  free_rbnode(node);
 }
 
-void cmp_tree(rbtree *actual, rbtree *expected) {
-  if (NULL == actual) {
-    assertf(NULL == expected, "%d", expected->data);
+void cmp_node(rbnode *actual, rbnode *expected) {
+  if (!actual) {
+    assertf(!expected, "%d", expected->data);
     return;
   }
-  if (NULL == expected) {
-    assertf(NULL == actual, "%d", actual->data);
+  if (!expected) {
+    assertf(!actual, "%d", actual->data);
     return;
   }
   assertf(actual->data == expected->data, "data: actual %d != expected %d",
           actual->data, expected->data);
   assertf(actual->col == expected->col, "color: actual %d != expected %d",
           actual->col, expected->col);
-  cmp_tree(actual->left, expected->left);
-  cmp_tree(actual->right, expected->right);
+  cmp_node(actual->left, expected->left);
+  cmp_node(actual->right, expected->right);
 }
 
-void print(rbtree *tree) {
-  if (NULL == tree)
+void print(rbnode *node) {
+  if (!node)
     return;
   int dir = -1;
-  if (NULL != tree->parent)
-    dir = tree == tree->parent->right;
+  if (node->parent)
+    dir = node == node->parent->right;
   if (-1 == dir)
-    printf("%d root\n", tree->data);
+    printf("%d root\n", node->data);
   else if (dir)
-    printf("%d right\n", tree->data);
+    printf("%d right\n", node->data);
   else
-    printf("%d left\n", tree->data);
-  print(tree->left);
-  print(tree->right);
+    printf("%d left\n", node->data);
+  print(node->left);
+  print(node->right);
 }

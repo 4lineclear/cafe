@@ -8,23 +8,23 @@ typedef enum color {
   Black,
 } color;
 
-typedef struct red_black_tree {
-  struct red_black_tree *parent;
-  struct red_black_tree *left;
-  struct red_black_tree *right;
+typedef struct red_black_node {
+  struct red_black_node *parent;
+  struct red_black_node *left;
+  struct red_black_node *right;
   enum color col;
   int data;
-} rbtree;
+} rbnode;
 
-void free_rbtree(rbtree *tree) {
-  if (!tree)
+void free_rbnode(rbnode *node) {
+  if (!node)
     return;
-  free_rbtree(tree->left);
-  free_rbtree(tree->right);
-  free(tree);
+  free_rbnode(node->left);
+  free_rbnode(node->right);
+  free(node);
 }
 
-void rbtree_link(rbtree *parent, rbtree *child, int right) {
+void rbnode_link(rbnode *parent, rbnode *child, int right) {
   assert(parent);
   if (right)
     parent->right = child;
@@ -34,48 +34,48 @@ void rbtree_link(rbtree *parent, rbtree *child, int right) {
     child->parent = parent;
 }
 
-rbtree *rbtree_root(rbtree *tree) {
-  rbtree *curr = tree;
+rbnode *rbnode_root(rbnode *node) {
+  rbnode *curr = node;
   while (curr->parent)
     curr = curr->parent;
   return curr;
 }
 
-rbtree red_rbtree(int data) {
-  rbtree tree = {};
-  tree.parent = tree.left = tree.right = NULL;
-  tree.col = Red;
-  tree.data = data;
-  return tree;
+rbnode red_rbnode(int data) {
+  rbnode node = {};
+  node.parent = node.left = node.right = NULL;
+  node.col = Red;
+  node.data = data;
+  return node;
 }
 
-rbtree black_rbtree(int data) {
-  rbtree tree = {};
-  tree.parent = tree.left = tree.right = NULL;
-  tree.col = Black;
-  tree.data = data;
-  return tree;
+rbnode black_rbnode(int data) {
+  rbnode node = {};
+  node.parent = node.left = node.right = NULL;
+  node.col = Black;
+  node.data = data;
+  return node;
 }
 
-rbtree *new_rbtree(rbtree tree) {
-  rbtree *ntree = malloc(sizeof(rbtree));
-  assert(ntree);
-  *ntree = tree;
-  return ntree;
+rbnode *new_rbnode(rbnode node) {
+  rbnode *nnode = malloc(sizeof(rbnode));
+  assert(nnode);
+  *nnode = node;
+  return nnode;
 }
-rbtree *new_black_rbtree(int data) { return new_rbtree(black_rbtree(data)); }
-rbtree *new_red_rbtree(int data) { return new_rbtree(red_rbtree(data)); }
+rbnode *new_black_rbnode(int data) { return new_rbnode(black_rbnode(data)); }
+rbnode *new_red_rbnode(int data) { return new_rbnode(red_rbnode(data)); }
 
-rbtree *clone_rbtree(rbtree *tree) {
-  if (!tree)
+rbnode *clone_rbnode(rbnode *node) {
+  if (!node)
     return NULL;
-  rbtree *curr = malloc(sizeof(rbtree));
+  rbnode *curr = malloc(sizeof(rbnode));
   assert(curr);
   curr->parent = NULL;
-  curr->col = tree->col;
-  curr->data = tree->data;
-  curr->left = clone_rbtree(tree->left);
-  curr->right = clone_rbtree(tree->right);
+  curr->col = node->col;
+  curr->data = node->data;
+  curr->left = clone_rbnode(node->left);
+  curr->right = clone_rbnode(node->right);
   if (curr->left)
     curr->left->parent = curr;
   if (curr->right)
@@ -83,79 +83,94 @@ rbtree *clone_rbtree(rbtree *tree) {
   return curr;
 }
 
-static inline int rbtree_dir(rbtree *tree) {
-  return tree == tree->parent->right;
+rbnode *search_rbnode(rbnode *node, int data) {
+  if (!node)
+    return NULL;
+  else if (node->data < data)
+    return search_rbnode(node->right, data);
+  else if (node->data > data)
+    return search_rbnode(node->left, data);
+  else
+    return node;
 }
 
-void rbtree_rotate_left(rbtree *g) {
-  rbtree *gp = g->parent;
-  rbtree *p = g->right;
-  rbtree *n = p->left;
-  int right = gp ? rbtree_dir(g) : 0;
-  rbtree_link(g, n, 1);
-  rbtree_link(p, g, 0);
+static inline int rbnode_dir(rbnode *node) {
+  return node == node->parent->right;
+}
+
+void rbnode_rotate_left(rbnode *g) {
+  rbnode *gp = g->parent;
+  rbnode *p = g->right;
+  rbnode *n = p->left;
+  int right = gp ? rbnode_dir(g) : 0;
+  rbnode_link(g, n, 1);
+  rbnode_link(p, g, 0);
   if (gp)
-    rbtree_link(gp, p, right);
+    rbnode_link(gp, p, right);
   else
     p->parent = NULL;
 }
 
-void rbtree_rotate_right(rbtree *g) {
-  rbtree *gp = g->parent;
-  rbtree *p = g->left;
-  rbtree *n = p->right;
-  int right = gp ? rbtree_dir(g) : 0;
-  rbtree_link(g, n, 0);
-  rbtree_link(p, g, 1);
+void rbnode_rotate_right(rbnode *g) {
+  rbnode *gp = g->parent;
+  rbnode *p = g->left;
+  rbnode *n = p->right;
+  int right = gp ? rbnode_dir(g) : 0;
+  rbnode_link(g, n, 0);
+  rbnode_link(p, g, 1);
   if (gp)
-    rbtree_link(gp, p, right);
+    rbnode_link(gp, p, right);
   else
     p->parent = NULL;
 }
 
 // based off
-// https://www.cs.emory.edu/~cheung/Courses/253/Syllabus/Trees/RB-insert2.html
+// https://www.cs.emory.edu/~cheung/Courses/253/Syllabus/nodes/RB-insert2.html
 
 // expects n->parent to be red
-void rbtree_insert_fix(rbtree *n) {
-  rbtree *p = n->parent;
-  rbtree *g = p->parent;
-  rbtree *u = rbtree_dir(p) ? g->left : g->right;
+void rbnode_insert_fix(rbnode *n) {
+start:;
+  rbnode *p = n->parent;
+  rbnode *gp = p->parent;
+  rbnode *u = rbnode_dir(p) ? gp->left : gp->right;
   if (u && u->col == Red) { // case 3 ------------------------------------------
-    g->col = g->parent ? Red : Black;
+    rbnode *ggp = gp->parent;
+    gp->col = ggp ? Red : Black;
     u->col = Black;
     p->col = Black;
-    if (g->parent && g->parent->col == Red)
-      rbtree_insert_fix(g);
-  } else { // case 4 -----------------------------------------------------------
-    int p_right = rbtree_dir(p);
-    int n_right = rbtree_dir(n);
-    if (p_right != n_right) {
-      if (p_right)
-        rbtree_rotate_right(p);
-      else
-        rbtree_rotate_left(p);
+    if (ggp && ggp->col == Red) {
+      n = gp;
+      goto start;
     }
+    return;
+  } // case 4 ------------------------------------------------------------------
+  int p_right = rbnode_dir(p);
+  int n_right = rbnode_dir(n);
+  if (p_right != n_right) {
     if (p_right)
-      rbtree_rotate_left(g);
+      rbnode_rotate_right(p);
     else
-      rbtree_rotate_right(g);
-    g->parent->col = Black;
-    g->col = Red;
+      rbnode_rotate_left(p);
   }
+  if (p_right)
+    rbnode_rotate_left(gp);
+  else
+    rbnode_rotate_right(gp);
+  gp->parent->col = Black;
+  gp->col = Red;
 }
 
-void rbtree_insert(rbtree **tree, int data) {
-  assert(tree);
-  rbtree *n = new_red_rbtree(data);
+void rbnode_insert(rbnode **node, int data) {
+  assert(node);
+  rbnode *n = new_red_rbnode(data);
   assert(n);
-  if (!*tree) { // case 1 ------------------------------------------------------
+  if (!*node) { // case 1 ------------------------------------------------------
     n->col = Black;
-    *tree = n;
+    *node = n;
     return;
   }
-  rbtree *p = *tree;
-  rbtree *curr = *tree;
+  rbnode *p = *node;
+  rbnode *curr = *node;
   while (curr) {
     p = curr;
     if (n->data < curr->data)
@@ -170,5 +185,5 @@ void rbtree_insert(rbtree **tree, int data) {
   n->parent = p;
   if (p->col == Black) // case 2 -----------------------------------------------
     return;
-  rbtree_insert_fix(n);
+  rbnode_insert_fix(n);
 }

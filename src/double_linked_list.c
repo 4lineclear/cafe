@@ -14,22 +14,22 @@ typedef struct double_list_node {
 } dln;
 
 int dll_empty(dll *list) {
-  if (NULL == list->head) {
-    assert(NULL == list->tail);
+  if (!list->head) {
+    assert(!list->tail);
     return 1;
   }
-  if (NULL == list->tail) {
-    assert(NULL == list->head);
+  if (!list->tail) {
+    assert(!list->head);
     return 1;
   }
   return 0;
 }
 
 void free_dll(dll *list) {
-  assert(NULL != list);
+  assert(list);
   dln *curr = list->head;
   dln *next = curr;
-  while (NULL != curr) {
+  while (curr) {
     next = curr->next;
     free(curr);
     curr = next;
@@ -38,15 +38,15 @@ void free_dll(dll *list) {
 }
 
 void join_dln(dln *prev, dln *next) {
-  assert(NULL != prev);
-  assert(NULL != next);
+  assert(prev);
+  assert(next);
   prev->next = next;
   next->prev = prev;
 }
 
 dln *new_dln(int data) {
   dln *node = malloc(sizeof(dln));
-  assert(NULL != node);
+  assert(node);
   node->data = data;
   node->prev = NULL;
   node->next = NULL;
@@ -61,9 +61,9 @@ dll new_dll(int data) {
 }
 
 void dll_append(dll *list, int data) {
-  assert(NULL != list);
+  assert(list);
   dln *new = new_dln(data);
-  assert(NULL != new);
+  assert(new);
   if (dll_empty(list)) {
     list->head = new;
     list->tail = new;
@@ -74,9 +74,9 @@ void dll_append(dll *list, int data) {
 }
 
 void dll_prepend(dll *list, int data) {
-  assert(NULL != list);
+  assert(list);
   dln *new = new_dln(data);
-  assert(NULL != new);
+  assert(new);
   if (dll_empty(list)) {
     list->head = new;
     list->tail = new;
@@ -89,7 +89,7 @@ void dll_prepend(dll *list, int data) {
 dll copy_dln(dln *node) {
   dll list = empty_dll();
   dln *curr = node;
-  while (NULL != curr) {
+  while (curr) {
     dll_append(&list, curr->data);
     curr = curr->next;
   }
@@ -107,25 +107,25 @@ dll dll_from_arr(int *items, size_t len) {
 }
 
 dln *dll_search(dll *list, int data) {
-  assert(NULL != list);
+  assert(list);
   dln *curr;
-  for (curr = list->head; NULL != curr; curr = curr->next)
+  for (curr = list->head; curr; curr = curr->next)
     if (curr->data == data)
       return curr;
   return NULL;
 }
 
 dln *dll_rsearch(dll *list, int data) {
-  assert(NULL != list);
+  assert(list);
   dln *curr;
-  for (curr = list->tail; NULL != curr; curr = curr->prev)
+  for (curr = list->tail; curr; curr = curr->prev)
     if (curr->data == data)
       return curr;
   return NULL;
 }
 
 void dll_copy_after(dll *list, dln *node) {
-  assert(NULL != list);
+  assert(list);
   dll copy = copy_dln(node);
   if (dll_empty(list)) {
     *list = copy;
@@ -136,7 +136,7 @@ void dll_copy_after(dll *list, dln *node) {
 }
 
 void dll_copy_before(dll *list, dln *node) {
-  assert(NULL != list);
+  assert(list);
   dll copy = copy_dln(node);
   if (dll_empty(list)) {
     *list = copy;
@@ -147,11 +147,11 @@ void dll_copy_before(dll *list, dln *node) {
 }
 
 void dll_extend_after(dll *list, dln *nodes) {
-  assert(NULL != list);
-  if (NULL == nodes)
+  assert(list);
+  if (!nodes)
     return;
   dln *curr = nodes;
-  while (NULL != curr->next)
+  while (curr->next)
     curr = curr->next;
   if (dll_empty(list)) {
     list->head = nodes;
@@ -163,11 +163,11 @@ void dll_extend_after(dll *list, dln *nodes) {
 }
 
 void dll_extend_before(dll *list, dln *nodes) {
-  assert(NULL != list);
-  if (NULL == nodes)
+  assert(list);
+  if (!nodes)
     return;
   dln *curr = nodes;
-  while (NULL != curr->next)
+  while (curr->next)
     curr = curr->next;
   if (dll_empty(list)) {
     list->head = nodes;
@@ -181,7 +181,7 @@ void dll_extend_before(dll *list, dln *nodes) {
 dln *dln_nth(dln *node, size_t n) {
   size_t i = 0;
   dln *curr = node;
-  while (i < n && NULL != curr)
+  while (i < n && curr)
     curr = curr->next;
   return curr;
 }

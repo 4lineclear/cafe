@@ -9,7 +9,6 @@ cafe is a set of algorithms & functions built to learn c.
 - sorting functions
 - utf8 support
 - Vector
-- Linked List
 - Smart pointers
   - Box
   - Rc
@@ -22,12 +21,16 @@ Most of the above should also come with a wide array of testing.
 
 # Other TODO
 
-replaces usages of NULL with normal pointer checking `(ptr) && (!ptr)`
-
 
 ## Built
 
-So far nothing
+- linked list
+  - single linked list
+  - double linked list
+- trees
+  - red-black tree
+- some sorting functions
+
 
 ## Other notes
 

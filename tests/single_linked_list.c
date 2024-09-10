@@ -144,7 +144,7 @@ void nth() {
 void compare_sln(sll *list, int *e, const size_t len) {
   size_t i = 0;
   sln *node = list->head;
-  while (NULL != node && i < len) {
+  while (node && i < len) {
     assertf(node->data == e[i],
             "The node at index %zu holds data %d, which differs from the "
             "expected value of %d.",
@@ -152,8 +152,8 @@ void compare_sln(sll *list, int *e, const size_t len) {
     node = node->next;
     i++;
   }
-  if (NULL != node) {
-    while (NULL != node->next) {
+  if (node) {
+    while (node->next) {
       i++;
       node = node->next;
     }
