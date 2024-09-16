@@ -24,20 +24,20 @@ void bubble_sort(int *items, size_t len) {
 }
 
 void insertion_sort(int *items, size_t len) {
-  for (size_t i = 1; i < len; i++) {
-    int temp = items[i];
-    int j;
-    for (j = i - 1; j >= 0 && items[j] > temp; j--) {
-      items[j + 1] = items[j];
-    }
-    items[j + 1] = temp;
+  size_t i, j;
+  int temp;
+  for (i = 1; i < len; i++) {
+    temp = items[i];
+    for (j = i; j > 0 && items[j - 1] > temp; --j)
+      items[j] = items[j - 1];
+    items[j] = temp;
   }
 }
 
 void merge(int arr[], size_t l, size_t m, size_t r) {
-  int i, j, k;
-  int il = m - l + 1;
-  int jl = r - m;
+  size_t i, j, k;
+  size_t il = m - l + 1;
+  size_t jl = r - m;
   int L[il], R[jl];
 
   for (i = 0; i < il; i++)
@@ -62,7 +62,7 @@ void merge(int arr[], size_t l, size_t m, size_t r) {
 
 void merge_sort_inner(int *items, size_t l, size_t r) {
   if (l < r) {
-    int m = l + (r - l) / 2;
+    size_t m = l + (r - l) / 2;
 
     merge_sort_inner(items, l, m);
     merge_sort_inner(items, m + 1, r);

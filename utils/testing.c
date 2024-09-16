@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <errno.h>
+#include <string.h> // IWYU pragma: keep
 
 /*
  * Taken from

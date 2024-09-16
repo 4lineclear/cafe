@@ -17,7 +17,7 @@ int main() {
 }
 
 int empty_test(void (*sort)(int *, size_t)) {
-  const int len = 0;
+  const size_t len = 0;
   int expected[] = {};
   int to_test[] = {};
   sort(to_test, len);
@@ -26,7 +26,7 @@ int empty_test(void (*sort)(int *, size_t)) {
 
 int standard_test(const char *name, void (*sort)(int *, size_t)) {
   printf("Testing %s: ", name);
-  const int len = 6;
+  const size_t len = 6;
   int expected[] = {0, 1, 2, 3, 4, 5};
   int to_test[] = {5, 3, 1, 2, 0, 4};
   print_one(to_test, len);
@@ -50,7 +50,7 @@ void print_one(int *n, const size_t len) {
   printf(" ]");
 }
 
-void print_arrays(int *a, int *b, const size_t diff, const size_t len) {
+void print_arrays(int *a, int *b, const size_t len) {
   puts("array a:");
   print_one(a, len);
   puts("");
@@ -68,8 +68,7 @@ int compare_arrs(int *a, int *b, const size_t len) {
       failures += EXIT_FAILURE;
     }
   }
-  if (failures != EXIT_SUCCESS) {
-    print_arrays(a, b, i, len);
-  }
+  if (failures != EXIT_SUCCESS)
+    print_arrays(a, b, len);
   return failures;
 }

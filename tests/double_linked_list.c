@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 void empty();
 void append();
@@ -18,7 +17,7 @@ void extend_after();
 void nth();
 void compare_dln(dll *list, int *e, size_t len);
 
-int main(int argc, char *argv[]) {
+int main() {
   empty();
   append();
   prepend();
@@ -176,15 +175,15 @@ void compare_forward(dll *list, int *e, const size_t len) {
 }
 
 void compare_reverse(dll *list, int *e, const size_t len) {
-  size_t i = len - 1;
+  size_t i = len;
   dln *node = list->tail;
-  while (node && i >= 0) {
+  while (node && i > 0) {
+    i--;
     assertf(node->data == e[i],
             "The node at index %zu holds data %d, which differs from the "
             "expected value of %d.",
             i, node->data, e[i]);
     node = node->prev;
-    i -= i > 0;
   }
   if (node) {
     while (node->prev) {
@@ -193,8 +192,7 @@ void compare_reverse(dll *list, int *e, const size_t len) {
     }
     assertf(0, "node length %zu is less than the expected %zu\n", i, len);
   }
-  assertf(i < len || (len - i) >= 0,
-          "node length %zu is more than the expected %zu\n", i, len);
+  assertf(i <= len, "node length %zu is more than the expected %zu\n", i, len);
 }
 
 void compare_dln(dll *list, int *e, const size_t len) {

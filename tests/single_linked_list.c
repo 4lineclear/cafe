@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 void empty();
 void append();
@@ -17,7 +16,7 @@ void extend_after();
 void nth();
 void compare_sln(sll *list, int *e, size_t len);
 
-int main(int argc, char *argv[]) {
+int main() {
   empty();
   append();
   prepend();
