@@ -1,3 +1,7 @@
+/*
+ * visualization used from
+ * https://www.cs.usfca.edu/~galles/visualization/RedBlack.html
+ * */
 #include <assert.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -54,6 +58,8 @@ void rbnode_unlink(rbnode *child) {
 }
 
 rbnode *rbnode_root(rbnode *node) {
+  if (!node)
+    return NULL;
   rbnode *curr = node;
   while (curr->parent)
     curr = curr->parent;
@@ -230,198 +236,133 @@ rbnode *rbnode_from_arr(int *data, size_t len) {
   return root;
 }
 
-typedef struct {
-  int changed;
-  rbnode *root;
-} rbnode_deleted;
-
 // based off https://www.youtube.com/watch?v=eoQpRtMpA9I
-void rbnode_delete_fix(rbnode *x) {
-  if (!x)
-    return;
-  if (x->col == Red) {
-  RBDF_0:
+void rbnode_delete_fix(rbnode *x, rbnode *p, int x_right) {
+  if (red(x)) {
+  RBDF_0: // -------------------------------------------------------------------
     x->col = Black;
     return;
   }
-  int x_right = rbnode_dir(x);
-  rbnode *w = x_right ? x->parent->left : x->parent->right;
-RBDF_BLACK:;
+  rbnode *w = x_right ? p->left : p->right;
+RBDF_BLACK:
   if (!w)
-    goto RBDF_1;
-  if (w->col == Red)
     goto RBDF_2;
+  if (w->col == Red)
+    goto RBDF_1;
   int lb = black(w->left);
   int rb = black(w->right);
   if (lb && rb)
-    goto RBDF_1;
+    goto RBDF_2;
   if (x_right ? (lb && !rb) : (rb && !lb))
     goto RBDF_3;
   if (x_right ? !lb : !rb)
     goto RBDF_4;
   exit(1);
-RBDF_1:
-  puts("1");
+RBDF_1: // --------------------------------------------------------------------
   if (w)
     w->col = Black;
-  x->parent->col = Red;
+  p->col = Red;
   if (x_right) {
-    rbnode_rotate_right(x->parent);
-    w = x->parent->left;
+    rbnode_rotate_right(p);
+    w = p->left;
   } else {
-    rbnode_rotate_left(x->parent);
-    w = x->parent->right;
+    rbnode_rotate_left(p);
+    w = p->right;
   }
   goto RBDF_BLACK;
-RBDF_2:
-  puts("2");
+RBDF_2: // --------------------------------------------------------------------
   w->col = Red;
-  x = x->parent;
+  x = p;
+  p = p->parent;
+  x_right = rbnode_dir(x);
   if (red(x))
     goto RBDF_0;
-  else if (!x->parent) // root
+  else if (!p) // root
     goto RBDF_DONE;
   else
     goto RBDF_BLACK;
-RBDF_3:
-  puts("3");
-  w->col = Black;
+RBDF_3: // --------------------------------------------------------------------
+  w->col = Red;
   if (x_right) {
     if (w->right)
       w->right->col = Black;
     rbnode_rotate_left(w);
-    w = x->parent->right;
+    w = p->left;
   } else {
     if (w->left)
       w->left->col = Black;
     rbnode_rotate_right(w);
-    w = x->parent->left;
+    w = p->right;
   }
   goto RBDF_4;
-RBDF_4:
-  puts("4");
-  w->col = x->parent->col;
-  x->parent->col = Black;
+RBDF_4: // --------------------------------------------------------------------
+  w->col = p->col;
+  p->col = Black;
   if (x_right) {
     if (w->left)
       w->left->col = Black;
-    rbnode_rotate_right(x);
+    rbnode_rotate_right(p);
   } else {
     if (w->right)
-      w->left->col = Black;
-    rbnode_rotate_left(x);
+      w->right->col = Black;
+    rbnode_rotate_left(p);
   }
   goto RBDF_DONE;
-RBDF_DONE:; // finished state
+RBDF_DONE:;
 }
 
 void rbnode_delete(rbnode **root, rbnode *del) {
   assert(root);
   if (!del || !*root)
     return;
+
   rbnode *repl = rbnode_min(del->right);
   rbnode *x = NULL; // case i
-  if (del->right)
+  rbnode *p = NULL;
+  int x_dir = 0;
+
+  if (del->right) {
     x = del->left ? repl->right : del->right; // case iii : ii
-  else if (del->left)                         // case ii
+    x_dir = 1;
+  } else if (del->left) { // case ii
     x = repl = del->left;
+    x_dir = 0;
+  }
+
+  if (x)
+    p = x->parent;
+  else if (repl)
+    p = repl;
+  else
+    p = del->parent;
+
   if (repl) {
     rbnode_link(repl->parent, repl->right, rbnode_dir(repl));
     rbnode_link(repl, del->left, 0);
     rbnode_link(repl, del->right, 1);
   }
+
   if (*root == del)
     *root = repl;
   else
     rbnode_link(del->parent, repl, rbnode_dir(del));
-
   if (del->col == Red) {
-    if (!repl || repl->col == Red) { // a
-      puts("a");                     // do nothing
-    } else {                         // b
-      puts("b");
+    if (!repl || repl->col == Red) { // a: do nothing
+    } else {                         // b:
       repl->col = Red;
-      rbnode_delete_fix(x);
+      rbnode_delete_fix(x, p, x_dir);
+      *root = rbnode_root(*root);
     }
   } else {
-    if (repl && repl->col == Red) { // c
-      puts("c");
+    if (repl && repl->col == Red) { // c:
       repl->col = Black;
-    } else if (*root == x) { // d
-      puts("d");             // do nothing
-    } else {                 // e
-      puts("e");
-      rbnode_delete_fix(x);
+    } else if (*root == x) { // d: do nothing
+    } else {                 // e:
+      rbnode_delete_fix(x, p, x_dir);
+      *root = rbnode_root(*root);
     }
   }
   free(del);
-}
-
-// deletes the given node, returns the root
-//
-// precondition: del must be within root's branches
-void rbnode_delete2(rbnode **root, rbnode *del) {
-  assert(root);
-  if (!del || !*root)
-    return;
-  if (*root == del && !del->left && !del->right) { // case 1 empty root
-    free(*root);
-    *root = NULL;
-    return;
-  }
-  if (!del->left && !del->right) {
-    if (del->col == Red) { // case 2 empty red leaf
-      rbnode_unlink(del);
-      free(del);
-    } else { // case 3 empty black leaf
-      if (del->parent->col == Red)
-        del->parent->col = Black;
-      puts("black leaves not handled");
-      exit(EXIT_FAILURE);
-    }
-    return;
-  }
-  if (!del->left || !del->right) { // case 4 single child
-    rbnode *child = del->left ? del->left : del->right;
-    if (del->col == Black)
-      child->col = Black;
-    child->parent = del->parent;
-    if (*root == del)
-      *root = child;
-    else
-      rbnode_link(del->parent, child, rbnode_dir(del));
-    free(del);
-    return;
-  }
-  rbnode *x; // del's replacement
-  rbnode *w; // x's sibling
-  rbnode *y; // x's replacement
-  x = rbnode_min(del->right);
-  y = x->right;
-  if (x == del->right) {
-    w = del->left;
-    rbnode_link(del, y, 1);
-  } else {
-    w = x->parent->right;
-    rbnode_link(x->parent, y, 0);
-  }
-  if (x->col == Red) { // case 5 red replacement
-    // do nothing
-  } else if (y && y->col == Red) { // case 6 black replacement
-    y->col = Black;
-  } else if (*root == del) {
-  } else if (!w ||
-             (w->col == Black &&                    //
-              black(w->left) && black(w->right))) { // case 6 black replacement
-  } else {
-    if (red(del)) {
-    }
-    puts("case not handled");
-    exit(EXIT_FAILURE);
-  }
-  del->data = x->data;
-  *root = del->parent ? *root : del;
-  free(x);
 }
 
 int rbnode_search_delete(rbnode **root, int data) {

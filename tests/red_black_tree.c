@@ -35,7 +35,12 @@ void delete_single_child_root();
 void delete_red_red();
 void delete_black_red();
 void delete_red_black_red();
+void delete_fix4();
+void delete_fix3();
+void delete_fix2();
+void delete_fix1();
 void print(rbnode *);
+void valid_tree(rbnode *root);
 
 #define col(C) C == Red ? "red" : "black"
 #define check_node(N, D, C)                                                    \
@@ -43,7 +48,7 @@ void print(rbnode *);
   assertf(N->data == D, "data: actual %d != expected %d", N->data, D);         \
   assertf(N->col == C, "col: actual %s != expected %s", col(N->col), col(C))
 
-#define node_null(N)                                                           \
+#define rb_is_null(N)                                                          \
   assertf(N == NULL, "given node is not null, data: %d, color: %s", N->data,   \
           col(N->col));
 
@@ -76,6 +81,10 @@ int main() {
   delete_red_red();
   delete_black_red();
   delete_red_black_red();
+  delete_fix4();
+  delete_fix3();
+  delete_fix2();
+  delete_fix1();
   return EXIT_SUCCESS;
 }
 
@@ -147,6 +156,7 @@ void insert_case1() {
   rbnode *root = NULL;
   rbnode_insert(&root, 11);
   check_node(root, 11, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -158,6 +168,7 @@ void insert_case2a() {
   check_node(root, 11, Black);
   check_node(root->left, 9, Red);
   check_node(root->right, 12, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -179,6 +190,7 @@ void insert_case2b() {
   check_node(root->right, 11, Red);
   check_node(root->right->left, 10, Black);
   check_node(root->right->right, 12, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -192,6 +204,7 @@ void insert_case3a1() {
   check_node(root->left, 9, Black);
   check_node(root->left->left, 8, Red);
   check_node(root->right, 12, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -205,6 +218,7 @@ void insert_case3a2() {
   check_node(root->left, 10, Black);
   check_node(root->right, 12, Black);
   check_node(root->right->right, 13, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -222,6 +236,7 @@ void insert_case3b1() {
   check_node(root->left->right, 10, Black);
   check_node(root->left->left->left, 6, Red);
   check_node(root->right, 12, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -239,6 +254,7 @@ void insert_case3b2() {
   check_node(root->right->left, 12, Black);
   check_node(root->right->right, 14, Black);
   check_node(root->right->right->right, 15, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -254,6 +270,7 @@ void insert_case4a1() {
   check_node(root->left->left, 8, Red);
   check_node(root->left->right, 10, Red);
   check_node(root->right, 12, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -269,6 +286,7 @@ void insert_case4a2() {
   check_node(root->right, 15, Black);
   check_node(root->right->left, 14, Red);
   check_node(root->right->right, 16, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -284,6 +302,7 @@ void insert_case4b1() {
   check_node(root->left->left, 8, Red);
   check_node(root->left->right, 10, Red);
   check_node(root->right, 12, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -299,6 +318,7 @@ void insert_case4b2() {
   check_node(root->right, 15, Black);
   check_node(root->right->left, 14, Red);
   check_node(root->right->right, 16, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -310,6 +330,7 @@ void insert_casem1() {
   check_node(root, 10, Black);
   check_node(root->left, 9, Red);
   check_node(root->right, 11, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -321,6 +342,7 @@ void insert_casem2() {
   check_node(root, 10, Black);
   check_node(root->left, 9, Red);
   check_node(root->right, 11, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -339,6 +361,7 @@ void insert_casem3() {
   check_node(root->right->right->right, 9, Black);
   check_node(root->right->right->right->left, 8, Red);
   check_node(root->right->right->right->right, 10, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -356,27 +379,29 @@ void from_arr() {
   check_node(root->right->right->right, 9, Black);
   check_node(root->right->right->right->left, 8, Red);
   check_node(root->right->right->right->right, 10, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
 void delete_null() {
   rbnode *root = NULL;
   rbnode_delete(&root, root);
-  node_null(root);
+  rb_is_null(root);
 }
 
 void delete_root() {
   rbnode *root = NULL;
   rbnode_insert(&root, 0);
   rbnode_delete(&root, root);
-  node_null(root);
+  rb_is_null(root);
 }
 
 void delete_red_leaf() {
   int data[] = {0, 1};
   rbnode *root = rbnode_from_arr(data, 2);
   rbnode_delete(&root, root->right);
-  node_null(root->right);
+  rb_is_null(root->right);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -391,7 +416,8 @@ void delete_single_child() {
   check_node(root, 1, Black);
   check_node(root->left, 0, Black);
   check_node(root->right, 3, Black);
-  node_null(root->right->right);
+  rb_is_null(root->right->right);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -406,6 +432,7 @@ void delete_single_child_root() {
   check_node(root->right, 2, Red);
   rbnode_delete(&root, root);
   check_node(root, 2, Black);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -425,7 +452,8 @@ void delete_red_red() {
   check_node(root->right, 14, Red);
   check_node(root->right->left, 12, Black);
   check_node(root->right->right, 15, Black);
-  node_null(root->right->right->left);
+  rb_is_null(root->right->right->left);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -441,7 +469,8 @@ void delete_black_red() {
   check_node(root, 12, Black);
   check_node(root->left, 10, Black);
   check_node(root->right, 13, Black);
-  node_null(root->right->left);
+  rb_is_null(root->right->left);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -467,6 +496,98 @@ void delete_red_black_red() {
   check_node(root->right->left->left, 8, Red);
   check_node(root->right->left->right, 11, Red);
   check_node(root->right->right, 26, Black);
+  rb_is_null(root->right->right->right);
+  valid_tree(root);
+  free_rbnode(root);
+}
+
+void delete_fix4() {
+  int data[] = {11, 9, 12, 8, 10, 7};
+  rbnode *root = rbnode_from_arr(data, 6);
+  check_node(root, 11, Black);
+  check_node(root->left, 9, Red);
+  check_node(root->left->left, 8, Black);
+  check_node(root->left->left->left, 7, Red);
+  check_node(root->left->right, 10, Black);
+  check_node(root->right, 12, Black);
+  rbnode_delete(&root, root->left);
+  check_node(root, 11, Black);
+  check_node(root->left, 8, Red);
+  check_node(root->left->left, 7, Black);
+  rb_is_null(root->left->left->left);
+  check_node(root->left->right, 10, Black);
+  check_node(root->right, 12, Black);
+  valid_tree(root);
+  free_rbnode(root);
+}
+
+void delete_fix3() {
+  int data[] = {11, 8, 12, 6, 9, 7};
+  rbnode *root = rbnode_from_arr(data, 6);
+  check_node(root, 11, Black);
+  check_node(root->left, 8, Red);
+  check_node(root->left->left, 6, Black);
+  check_node(root->left->left->right, 7, Red);
+  check_node(root->left->right, 9, Black);
+  check_node(root->right, 12, Black);
+  rbnode_delete(&root, root->left);
+  check_node(root, 11, Black);
+  check_node(root->left, 7, Red);
+  check_node(root->left->left, 6, Black);
+  rb_is_null(root->left->left->right);
+  check_node(root->left->right, 9, Black);
+  check_node(root->right, 12, Black);
+  valid_tree(root);
+  free_rbnode(root);
+}
+
+// creates a custom tree for a simpler test
+void delete_fix2() {
+  rbnode *root = new_black_rbnode(5);
+  rbnode_link(root, new_red_rbnode(2), 0);
+  rbnode_link(root, new_black_rbnode(8), 1);
+  rbnode_link(root->left, new_black_rbnode(1), 0);
+  rbnode_link(root->left, new_black_rbnode(4), 1);
+  rbnode_link(root->right, new_red_rbnode(7), 0);
+  rbnode_link(root->right, new_red_rbnode(9), 1);
+  check_node(root, 5, Black);
+  check_node(root->left, 2, Red);
+  check_node(root->left->left, 1, Black);
+  check_node(root->left->right, 4, Black);
+  check_node(root->right, 8, Black);
+  check_node(root->right->left, 7, Red);
+  check_node(root->right->right, 9, Red);
+  rbnode_delete(&root, root->left);
+  check_node(root, 5, Black);
+  check_node(root->left, 4, Black);
+  check_node(root->left->left, 1, Red);
+  check_node(root->right, 8, Black);
+  check_node(root->right->left, 7, Red);
+  check_node(root->right->right, 9, Red);
+  valid_tree(root);
+  free_rbnode(root);
+}
+
+void delete_fix1() {
+  int data[] = {7, 3, 18, 10, 22, 8, 11, 26};
+  rbnode *root = rbnode_from_arr(data, 8);
+  check_node(root, 7, Black);
+  check_node(root->left, 3, Black);
+  check_node(root->right, 18, Red);
+  check_node(root->right->left, 10, Black);
+  check_node(root->right->left->left, 8, Red);
+  check_node(root->right->left->right, 11, Red);
+  check_node(root->right->right, 22, Black);
+  check_node(root->right->right->right, 26, Red);
+  rbnode_delete(&root, root->left);
+  check_node(root, 18, Black);
+  check_node(root->left, 10, Red);
+  check_node(root->left->left, 7, Black);
+  check_node(root->left->left->right, 8, Red);
+  check_node(root->left->right, 11, Black);
+  check_node(root->right, 22, Black);
+  check_node(root->right->right, 26, Red);
+  valid_tree(root);
   free_rbnode(root);
 }
 
@@ -479,12 +600,34 @@ void cmp_node(rbnode *actual, rbnode *expected) {
     assertf(!actual, "%d", actual->data);
     return;
   }
-  assertf(actual->data == expected->data, "data: actual %d != expected %d",
-          actual->data, expected->data);
-  assertf(actual->col == expected->col, "color: actual %d != expected %d",
-          actual->col, expected->col);
+  check_node(actual, expected->data, expected->col);
   cmp_node(actual->left, expected->left);
   cmp_node(actual->right, expected->right);
+}
+
+size_t valid_node(rbnode *n) {
+  if (!n)
+    return 1;
+  assertf(!(n->col == Red && red(n->parent)),
+          "both current and parent node are red\n"
+          "node: data: %d, color: %s"
+          "parent: data: %d, color: %s",
+          n->data, col(n->col), n->parent->data, col(n->parent->col));
+  size_t l = valid_node(n->left);
+  size_t r = valid_node(n->right);
+  assertf(l == r,
+          "left depth(%zu) != right depth(%zu)"
+          "node: data: %d, color: %s",
+          l, r, n->data, col(n->col));
+  l += n->col == Red ? 0 : 1;
+  return l;
+}
+
+void valid_tree(rbnode *root) {
+  if (!root)
+    return;
+  assertf(root->col == Black, "root color was not black");
+  valid_node(root);
 }
 
 void print(rbnode *node) {
